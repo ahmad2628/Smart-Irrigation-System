@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 
 const __filename = fileURLToPath(import.meta.url);
+const __dirname  = path.dirname(__filename);
 const FRONTEND_DIR = path.resolve(__dirname, '../frontend');
 import { notFound, errorHandler } from './middleware/error.js';
 import healthRouter from './routes/health.js';
