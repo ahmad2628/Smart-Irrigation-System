@@ -7,7 +7,6 @@ import morgan from 'morgan';
 
 const __filename = fileURLToPath(import.meta.url);
 const FRONTEND_DIR = path.resolve(__dirname, '../frontend');
-const FRONTEND_DIR = path.resolve(__dirname, '../../frontend');
 import { notFound, errorHandler } from './middleware/error.js';
 import healthRouter from './routes/health.js';
 import authRouter from './routes/auth.js';
