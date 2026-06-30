@@ -1,0 +1,22 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: smart-irrigation-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: smart_root
+      MYSQL_DATABASE: smart_irrigation
+      MYSQL_USER: smart_app
+      MYSQL_PASSWORD: smart_app_pw
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-psmart_root"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mysql_data:

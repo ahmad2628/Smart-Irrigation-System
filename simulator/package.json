@@ -1,0 +1,10 @@
+{
+  "name": "smart-irrigation-simulator",
+  "version": "0.1.0",
+  "description": "Virtual IoT device that posts sensor readings to the backend",
+  "type": "module",
+  "main": "simulator.js",
+  "scripts": {
+    "start": "node simulator.js"
+  }
+}

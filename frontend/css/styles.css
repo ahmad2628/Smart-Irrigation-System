@@ -1,0 +1,66 @@
+:root {
+  --bs-primary: #0d6efd;
+  --sidebar-w: 220px;
+}
+
+body { background: #f7f9fb; }
+
+/* Login */
+.login-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0d6efd 0%, #20c997 100%);
+}
+.login-card { width: 100%; max-width: 420px; border: 0; }
+
+/* Sidebar */
+.sidebar {
+  min-height: calc(100vh - 56px);
+  width: var(--sidebar-w);
+}
+.sidebar-link {
+  display: block;
+  padding: .55rem .9rem;
+  color: #555;
+  border-radius: .375rem;
+  margin-bottom: .15rem;
+  text-decoration: none;
+  font-size: .95rem;
+}
+.sidebar-link:hover { background: #e9ecef; color: #000; }
+.sidebar-link.active { background: var(--bs-primary); color: #fff; font-weight: 500; }
+.sidebar-link i { width: 1.3em; }
+
+.content { min-height: calc(100vh - 56px); }
+.app-section { animation: fadeIn .15s ease; }
+@keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+
+/* Zone cards */
+.zone-card { transition: transform .1s; }
+.zone-card:hover { transform: translateY(-1px); }
+.metric { font-weight: 600; }
+.metric-label { color: #6c757d; font-size: .8rem; text-transform: uppercase; letter-spacing: .03em; }
+
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: .35rem; }
+.dot-online   { background: #198754; }
+.dot-offline  { background: #adb5bd; }
+.dot-irrigating { background: #0dcaf0; animation: pulse 1s infinite; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: .5; transform: scale(1.4); }
+}
+
+/* Pretty progress bars for moisture/humidity */
+.metric-bar {
+  height: 6px;
+  background: #e9ecef;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+.metric-bar > div { height: 100%; transition: width .4s ease; }
+.bar-moisture { background: #0d6efd; }
+.bar-humidity { background: #20c997; }
+.bar-level    { background: #ffc107; }

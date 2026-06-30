@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Smart Irrigation</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="css/styles.css" rel="stylesheet" />
+</head>
+<body>
+
+<!-- LOGIN PAGE -->
+<div id="page-login" class="login-shell d-none">
+  <div class="card login-card shadow">
+    <div class="card-body p-4">
+      <h3 class="mb-1"><i class="bi bi-droplet-half text-primary"></i> Smart Irrigation</h3>
+      <p class="text-muted mb-4">IoT-based water management</p>
+
+      <ul class="nav nav-pills mb-3" id="loginTabs">
+        <li class="nav-item"><button class="nav-link active" data-tab="login">Login</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="register">Register</button></li>
+      </ul>
+
+      <form id="loginForm" class="tab-pane">
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" id="loginEmail" required />
+        </div>
+        <div class="mb-3">
+  <label class="form-label">Password</label>
+  <div class="input-group">
+    <input type="password" class="form-control" id="loginPassword" required />
+    <button type="button" class="btn btn-outline-secondary" id="toggleLoginPassword">
+      <i class="bi bi-eye" id="loginPasswordIcon"></i>
+    </button>
+  </div>
+</div>
+        <button class="btn btn-primary w-100">Sign in</button>
+        <div class="form-text mt-2">Default admin: <code>admin@smartirrigation.local</code> / <code>Admin@123</code></div>
+      </form>
+
+      <form id="registerForm" class="tab-pane d-none">
+        <div class="mb-3">
+          <label class="form-label">Name</label>
+          <input type="text" class="form-control" id="regName" required />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" id="regEmail" required />
+        </div>
+        <div class="mb-3">
+  <label class="form-label">Password</label>
+  <div class="input-group">
+    <input type="password" class="form-control" id="regPassword" minlength="6" required />
+    <button type="button" class="btn btn-outline-secondary" id="toggleRegPassword">
+      <i class="bi bi-eye" id="regPasswordIcon"></i>
+    </button>
+  </div>
+</div>
+        <button class="btn btn-primary w-100">Create account</button>
+      </form>
+
+      <div id="loginError" class="alert alert-danger mt-3 d-none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP SHELL -->
+<div id="page-app" class="d-none">
+  <nav class="navbar navbar-expand navbar-dark bg-primary px-3">
+    <span class="navbar-brand"><i class="bi bi-droplet-half"></i> Smart Irrigation</span>
+    <div class="ms-auto d-flex align-items-center gap-3 text-white">
+      <div class="dropdown" id="alertsDropdown">
+        <button class="btn btn-sm btn-outline-light position-relative" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+          <i class="bi bi-bell"></i>
+          <span id="alertUnreadBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">0</span>
+        </button>
+        <div class="dropdown-menu dropdown-menu-end p-0" style="min-width:340px; max-width:380px;">
+          <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+            <strong>Notifications</strong>
+            <button id="markAllReadBtn" class="btn btn-link btn-sm p-0">Mark all read</button>
+          </div>
+          <div id="alertsList" class="small" style="max-height:60vh; overflow-y:auto;"></div>
+        </div>
+      </div>
+      <span id="userEmail" class="small"></span>
+      <span id="userRoleBadge" class="badge bg-light text-primary"></span>
+      <button id="logoutBtn" class="btn btn-sm btn-outline-light">Logout</button>
+    </div>
+  </nav>
+
+  <div class="d-flex">
+    <aside class="sidebar bg-light border-end p-2">
+      <a href="#overview"  class="sidebar-link active" data-section="overview"><i class="bi bi-speedometer2"></i> Overview</a>
+      <a href="#fields"    class="sidebar-link"        data-section="fields"><i class="bi bi-map"></i> Fields & Zones</a>
+      <a href="#devices"   class="sidebar-link"        data-section="devices"><i class="bi bi-cpu"></i> Devices</a>
+      <a href="#schedules" class="sidebar-link"        data-section="schedules"><i class="bi bi-calendar-event"></i> Schedules</a>
+      <a href="#weather"   class="sidebar-link"        data-section="weather"><i class="bi bi-cloud-sun"></i> Weather</a>
+      <a href="#history"   class="sidebar-link"        data-section="history"><i class="bi bi-clock-history"></i> History</a>
+      <a href="#reports"   class="sidebar-link"        data-section="reports"><i class="bi bi-file-earmark-bar-graph"></i> Reports</a>
+      <a href="#admin"     class="sidebar-link d-none" data-section="admin"    id="adminNav"><i class="bi bi-shield-lock"></i> Admin logs</a>
+      <a href="#settings"  class="sidebar-link d-none" data-section="settings" id="settingsNav"><i class="bi bi-gear"></i> Settings</a>
+    </aside>
+
+    <main class="content flex-grow-1 p-4">
+      <div id="globalToast" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080"></div>
+
+      <!-- OVERVIEW -->
+      <section id="section-overview" class="app-section">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="mb-0">Overview</h4>
+          <span class="text-muted small">Auto-refresh every 5s</span>
+        </div>
+        <div id="overviewCards" class="row g-3"></div>
+        <div id="overviewEmpty" class="text-muted d-none">
+          No zones yet. Go to <a href="#fields">Fields & Zones</a> to create one.
+        </div>
+      </section>
+
+      <!-- FIELDS & ZONES -->
+      <section id="section-fields" class="app-section d-none">
+        <div class="row g-4">
+          <div class="col-lg-6">
+            <h5>Fields</h5>
+            <div id="fieldsList" class="list-group mb-3"></div>
+            <form id="fieldForm" class="card card-body small">
+              <h6>Add field</h6>
+              <input class="form-control mb-2" id="fieldName" placeholder="Field name" required />
+              <div class="row g-2">
+                <div class="col"><input class="form-control" id="fieldSize" placeholder="Size (acres)" type="number" step="0.1" /></div>
+                <div class="col"><input class="form-control" id="fieldSoil" placeholder="Soil type" /></div>
+              </div>
+              <input class="form-control mt-2" id="fieldLocation" placeholder="Location" />
+              <button class="btn btn-primary btn-sm mt-2 align-self-start">Create field</button>
+            </form>
+          </div>
+
+          <div class="col-lg-6">
+            <h5>Zones</h5>
+            <div id="zonesList" class="list-group mb-3"></div>
+            <form id="zoneForm" class="card card-body small">
+              <h6>Add zone</h6>
+              <select class="form-select mb-2" id="zoneField" required></select>
+              <input class="form-control mb-2" id="zoneName" placeholder="Zone name" required />
+              <div class="row g-2">
+                <div class="col"><input class="form-control" id="zoneArea" placeholder="Area (m²)" type="number" /></div>
+                <div class="col">
+                  <select class="form-select" id="zoneCrop">
+                    <option value="">— Crop (optional) —</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row g-2 mt-2">
+                <div class="col">
+                  <input class="form-control" id="zoneTLow" placeholder="Custom low %" type="number" min="0" max="100" />
+                </div>
+                <div class="col">
+                  <input class="form-control" id="zoneTHigh" placeholder="Custom high %" type="number" min="0" max="100" />
+                </div>
+              </div>
+              <div class="form-text mt-1">Leave thresholds empty to inherit from the crop.</div>
+              <button class="btn btn-primary btn-sm mt-2 align-self-start">Create zone</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- DEVICES -->
+      <section id="section-devices" class="app-section d-none">
+        <h4 class="mb-3">Devices</h4>
+        <div class="row g-4">
+          <div class="col-lg-7">
+            <div id="devicesList" class="list-group"></div>
+          </div>
+          <div class="col-lg-5">
+            <form id="deviceForm" class="card card-body small">
+              <h6>Register device</h6>
+              <input class="form-control mb-2" id="deviceName" placeholder="Name (e.g. Controller-1)" required />
+              <select class="form-select mb-2" id="deviceType">
+                <option value="controller">Controller</option>
+                <option value="soil_moisture">Soil moisture sensor</option>
+                <option value="humidity">Humidity sensor</option>
+                <option value="water_level">Water level sensor</option>
+                <option value="valve">Valve</option>
+                <option value="pump">Pump</option>
+              </select>
+              <select class="form-select mb-2" id="deviceZone" required>
+                <option value="">— Pick a zone —</option>
+              </select>
+              <button class="btn btn-primary btn-sm align-self-start">Register</button>
+              <div id="deviceKeyOutput" class="alert alert-success mt-3 d-none small">
+                <div class="fw-semibold">Device key (shown only once):</div>
+                <code id="deviceKeyValue" class="d-block mt-1"></code>
+                <div class="mt-2">Use this with your IoT device or the simulator.</div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCHEDULES -->
+      <section id="section-schedules" class="app-section d-none">
+        <h4 class="mb-3">Schedules</h4>
+        <div class="row g-4">
+          <div class="col-lg-7">
+            <div id="schedulesList" class="list-group"></div>
+          </div>
+          <div class="col-lg-5">
+            <form id="scheduleForm" class="card card-body small">
+              <h6>Add schedule</h6>
+              <select class="form-select mb-2" id="schedZone" required></select>
+              <div class="row g-2">
+                <div class="col"><input class="form-control" id="schedStart"    type="time" required /></div>
+                <div class="col"><input class="form-control" id="schedDuration" type="number" min="1" max="1440" placeholder="Duration (min)" required /></div>
+              </div>
+              <input class="form-control mt-2" id="schedDays" placeholder="repeat: daily or mon,tue,fri" value="daily" />
+              <div class="form-text">Times are in UTC.</div>
+              <button class="btn btn-primary btn-sm mt-2 align-self-start">Create schedule</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- WEATHER -->
+      <section id="section-weather" class="app-section d-none">
+        <h4 class="mb-3">Weather</h4>
+        <div class="row g-3">
+          <div class="col-md-5">
+            <div class="card card-body">
+              <h6 class="text-muted text-uppercase small">Current</h6>
+              <div id="weatherCurrent">—</div>
+            </div>
+          </div>
+          <div class="col-md-7">
+            <div class="card card-body">
+              <h6 class="text-muted text-uppercase small">Next 24 hours</h6>
+              <div id="weatherForecast">—</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- REPORTS -->
+      <section id="section-reports" class="app-section d-none">
+        <h4 class="mb-3">Reports</h4>
+        <div class="card card-body mb-3">
+          <form id="reportsFilter" class="row g-2 align-items-end">
+            <div class="col-auto">
+              <label class="form-label small mb-1">From (UTC)</label>
+              <input type="date" id="reportFrom" class="form-control form-control-sm" />
+            </div>
+            <div class="col-auto">
+              <label class="form-label small mb-1">To (UTC)</label>
+              <input type="date" id="reportTo" class="form-control form-control-sm" />
+            </div>
+            <div class="col-auto">
+              <label class="form-label small mb-1">Zone</label>
+              <select id="reportZone" class="form-select form-select-sm" style="min-width:160px">
+                <option value="">All zones</option>
+              </select>
+            </div>
+            <div class="col-auto">
+              <button class="btn btn-primary btn-sm">Apply</button>
+            </div>
+            <div class="col-auto ms-auto">
+              <a id="dlIrrigationCsv" class="btn btn-outline-secondary btn-sm" href="#" target="_blank"><i class="bi bi-filetype-csv"></i> Irrigation CSV</a>
+              <a id="dlReadingsCsv"   class="btn btn-outline-secondary btn-sm" href="#" target="_blank"><i class="bi bi-filetype-csv"></i> Readings CSV</a>
+              <a id="dlSummaryPdf"    class="btn btn-outline-danger btn-sm"    href="#" target="_blank"><i class="bi bi-filetype-pdf"></i> Summary PDF</a>
+            </div>
+          </form>
+        </div>
+
+        <div id="reportStats" class="row g-3 mb-3"></div>
+        <div class="card card-body mb-3">
+          <h6 class="text-muted text-uppercase small">Daily irrigation events</h6>
+          <canvas id="reportDailyChart" height="80"></canvas>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="card card-body">
+              <h6 class="text-muted text-uppercase small">By trigger</h6>
+              <div id="reportByTrigger"></div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card card-body">
+              <h6 class="text-muted text-uppercase small">By status</h6>
+              <div id="reportByStatus"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SETTINGS (admin) -->
+      <section id="section-settings" class="app-section d-none">
+        <h4 class="mb-3">System settings</h4>
+
+        <div class="row g-4">
+          <div class="col-lg-7">
+            <div class="card card-body">
+              <h6 class="text-muted text-uppercase small mb-3">Configuration</h6>
+              <form id="configForm">
+                <div id="configFields"></div>
+                <button class="btn btn-primary btn-sm mt-3">Save changes</button>
+              </form>
+              <div class="small text-muted mt-3">Changes take effect on the next decision-engine cycle.</div>
+            </div>
+          </div>
+
+          <div class="col-lg-5">
+            <div class="card card-body mb-3">
+              <h6 class="text-muted text-uppercase small">Crop thresholds</h6>
+              <p class="small text-muted mb-2">Edit moisture targets for each crop. Zones using a crop pick up changes immediately.</p>
+              <div id="cropsEditor"></div>
+              <form id="newCropForm" class="row g-2 mt-2 align-items-end small">
+                <div class="col-12"><div class="text-muted small fw-semibold">Add crop</div></div>
+                <div class="col-12"><input id="newCropName" class="form-control form-control-sm" placeholder="Name (e.g. Lettuce)" required /></div>
+                <div class="col-6"><input id="newCropLow"  type="number" min="0" max="100" step="1" class="form-control form-control-sm" placeholder="Low %" required /></div>
+                <div class="col-6"><input id="newCropHigh" type="number" min="0" max="100" step="1" class="form-control form-control-sm" placeholder="High %" required /></div>
+                <div class="col-12"><button class="btn btn-outline-primary btn-sm">Add crop</button></div>
+              </form>
+            </div>
+
+            <div class="card card-body mb-3">
+              <h6 class="text-muted text-uppercase small">Backup</h6>
+              <p class="small text-muted mb-2">Download a JSON snapshot of all database tables.</p>
+              <div class="d-flex gap-2">
+                <button id="downloadBackup"        class="btn btn-outline-primary btn-sm"><i class="bi bi-download"></i> Full backup</button>
+                <button id="downloadCompactBackup" class="btn btn-outline-secondary btn-sm"><i class="bi bi-download"></i> Compact</button>
+              </div>
+            </div>
+
+            <div class="card card-body border-danger">
+              <h6 class="text-danger text-uppercase small">Restore</h6>
+              <p class="small text-muted mb-2">Replaces all rows in tables found in the backup file. This cannot be undone.</p>
+              <input type="file" id="restoreFile" class="form-control form-control-sm mb-2" accept="application/json" />
+              <button id="restoreBtn" class="btn btn-outline-danger btn-sm"><i class="bi bi-upload"></i> Restore</button>
+              <div id="restoreResult" class="small mt-2"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ADMIN LOGS -->
+      <section id="section-admin" class="app-section d-none">
+        <h4 class="mb-3">Activity logs</h4>
+        <div class="card card-body">
+          <div id="adminLogsTable" class="small"></div>
+        </div>
+      </section>
+
+      <!-- HISTORY -->
+      <section id="section-history" class="app-section d-none">
+        <h4 class="mb-3">History</h4>
+        <div class="d-flex gap-2 align-items-center mb-3">
+          <label class="form-label mb-0">Zone:</label>
+          <select id="historyZone" class="form-select form-select-sm" style="width:auto"></select>
+        </div>
+        <div class="row g-3">
+          <div class="col-12">
+            <div class="card card-body">
+              <h6 class="text-muted text-uppercase small">Recent readings (last 100)</h6>
+              <canvas id="readingsChart" height="80"></canvas>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="card card-body">
+              <h6 class="text-muted text-uppercase small">Recent irrigation events</h6>
+              <div id="eventsList" class="small"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="js/api.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/overview.js"></script>
+<script src="js/fields.js"></script>
+<script src="js/devices.js"></script>
+<script src="js/schedules.js"></script>
+<script src="js/weather.js"></script>
+<script src="js/history.js"></script>
+<script src="js/reports.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/alerts.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
