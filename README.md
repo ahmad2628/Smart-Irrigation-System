@@ -1,7 +1,7 @@
 # IoT-Based Smart Irrigation System
 
 Final-year project (BSCS Fall 2022–2026, Fall-2025-03, advisor Dr. Hammad Hassan, University of Lahore).
-End-to-end implementation of the system specified in `Muhammad Ahmad Project documentation .docx`.
+End-to-end implementation of the system specified in Muhammad Ahmad Project documentation.
 
 ## Stack
 
